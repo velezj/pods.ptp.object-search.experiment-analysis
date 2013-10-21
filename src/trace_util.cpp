@@ -2,6 +2,7 @@
 #include "trace_util.hpp"
 #include <boost/exception/all.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -29,15 +30,36 @@ namespace trace_analysis {
       std::string raw_value;
       iss >> tag;
       std::getline( iss, raw_value );
+      std::istringstream value_stream( raw_value );
+
+      //std::cout << "RAW: tag=" << tag << " valuw=" << raw_value << std::endl;
       
       // create the resulting pair
       boost::property_tree::ptree node;
 
       // try to parse the value as JSON
       try {
-	boost::property_tree::json_parser::read_json( raw_value, node );
+	boost::property_tree::json_parser::read_json( value_stream, node );
+	// std::cout << "..trace [" << tag << "] ";
+	// boost::property_tree::xml_parser::write_xml( std::cout, node );
+	// std::cout << std::endl;
       } catch ( boost::property_tree::json_parser::json_parser_error &e ) {
-	node.put_value( raw_value );
+
+	// ok, try to foirce a JSON object 
+	std::stringstream ss;
+	ss << "{ \"" << tag << "\" : " << raw_value << " }";
+	try {
+	  boost::property_tree::json_parser::read_json( ss, node );
+	  // std::cout << "..trace [" << tag << "] {coerced} ";
+	  // boost::property_tree::xml_parser::write_xml( std::cout, node );
+	  // std::cout << std::endl;
+	} catch ( boost::property_tree::json_parser::json_parser_error &e2 ) {
+	  std::cout << boost::diagnostic_information( e ) << std::endl;
+	  node = boost::property_tree::ptree( raw_value );
+	  // std::cout << "..trace [" << tag << "] {malformed} ";
+	  // boost::property_tree::xml_parser::write_xml( std::cout, node );
+	  // std::cout << std::endl;
+	}
       }
 
       // ok , add to the items list
@@ -56,6 +78,8 @@ namespace trace_analysis {
       BOOST_THROW_EXCEPTION( std::invalid_argument("Cannot call find_item_groups with empty query") );
     }
 
+    bool verbose = false;
+
     // resutls, to be populated
     std::vector< boost::property_tree::ptree > groups;
     
@@ -71,6 +95,14 @@ namespace trace_analysis {
     
       // get the tag of the current line being searched
       std::string tag = _items[i].first;
+
+      if( verbose ) {
+	std::cout << "[" << i << " | " << key_index << "] tag: " << tag << "  match: <";
+	for( size_t j = 0; j < group_indices.size(); ++j ) {
+	  std::cout << group_indices[j] << ",";
+	}
+	std::cout << ">" << std::endl;
+      }
       
       // if the tag is the key we want, either incremenet the key index
       // or not depending on whether it is the last index
@@ -85,12 +117,20 @@ namespace trace_analysis {
 	  // add the found sequence to the list of resutls
 	  boost::property_tree::ptree g;
 	  for( size_t j = 0; j < group_indices.size(); ++j ) {
-	    g.put_child( _items[j].first,
-			 _items[j].second );
+	    g.put_child( _items[group_indices[j]].first,
+			 _items[group_indices[j]].second );
 	  }
 	  g.put_child( _items[i].first,
 		       _items[i].second );
 	  groups.push_back( g );
+	  
+	  if( verbose ) {
+	    std::cout << "--> match <";
+	    for( size_t j = 0; j < group_indices.size(); ++j ) {
+	      std::cout << group_indices[j] << ",";
+	    }
+	    std::cout << i << ">" << std::endl;
+	  }
 	}
 
 	// at this point, we have matched something so continue with next line
@@ -103,15 +143,20 @@ namespace trace_analysis {
       for( size_t j = 0; j < key_index; ++j ) {
 	if( tag == group_constraints[j] ) {
 
-	  // clean up the current matched sequence of indices
-	  // by removing the mathced keys *after* the one we just found
-	  for( size_t k = j + 1; k < key_index; ++j ) {
-	    group_indices.pop_back();
+	  // reset the match and reset the key to the start
+	  // also reset the current line to the line right after the
+	  // previous first key match
+	  // NOTE: we *do not* add one , since hte for loop
+	  //       will incremenet i after this!
+	  i = group_indices[0];
+	  group_indices.clear();
+	  key_index = 0;
+
+	  if( verbose ) {
+	    std::cout << "!reset downto i=" << i << std::endl;
 	  }
-	  
-	  // found previous key, reset to now looking for the key
-	  // after it!
-	  key_index = j + 1;
+
+	  break;
 	}
       }
     }

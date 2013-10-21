@@ -10,6 +10,8 @@ using namespace boost::property_tree;
 int main( int argc, char **argv ) 
 {
 
+  bool verbose = false;
+
   // create a test trace
   std::stringstream ss;
   ss << "+A+ 1" << std::endl;
@@ -25,6 +27,16 @@ int main( int argc, char **argv )
   // create a trace_t from it
   trace_t trace;
   trace.load( ss );
+
+  // print out the read lines
+  if( verbose ) {
+    std::cout << "TRACE" << std::endl;
+    for( size_t i = 0; i < trace.items().size(); ++i ) {
+      std::cout << trace.items()[i].first << std::endl;
+      json_parser::write_json( std::cout, trace.items()[i].second );
+      std::cout << std::endl;
+    }
+  }
   
   // test out some groups
   std::vector<std::string> g1;

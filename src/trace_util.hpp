@@ -30,6 +30,15 @@ namespace trace_analysis {
     void load( std::istream& is );
 
     // Description:
+    // Returns a vector of all of the items.
+    // This is not usually what you want, you probably want 
+    // a certain set of items as groups, see find_item_groups
+    std::vector< std::pair< std::string,
+			    boost::property_tree::ptree > >
+    items() const
+    { return _items; }
+
+    // Description:
     // Returns a list of matching sections of the trace.
     // The matches are returns which contain the given elements
     // in sequence.  The returned ptree's have keys the same as the 
