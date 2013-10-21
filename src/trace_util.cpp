@@ -143,14 +143,22 @@ namespace trace_analysis {
       for( size_t j = 0; j < key_index; ++j ) {
 	if( tag == group_constraints[j] ) {
 
-	  // reset the match and reset the key to the start
-	  // also reset the current line to the line right after the
-	  // previous first key match
+	  
+	  // now, we want to jump back to the next line after
+	  // the previous matched
+	  // and start looking for a new match
 	  // NOTE: we *do not* add one , since hte for loop
 	  //       will incremenet i after this!
-	  i = group_indices[0];
-	  group_indices.clear();
-	  key_index = 0;
+	  i = group_indices[ j ];
+
+	  // ok, clear the group indices found up to the
+	  // matched previous key
+	  for( size_t k = j; k < key_index; ++k ) {
+	    group_indices.pop_back();
+	  }
+
+	  // we want to find the previous key again
+	  key_index = j;
 
 	  if( verbose ) {
 	    std::cout << "!reset downto i=" << i << std::endl;
