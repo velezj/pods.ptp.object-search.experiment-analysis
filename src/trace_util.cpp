@@ -1,6 +1,6 @@
 
 #include "trace_util.hpp"
-#include <boost/exception.hpp>
+#include <boost/exception/all.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <iostream>
 #include <sstream>
@@ -35,7 +35,7 @@ namespace trace_analysis {
 
       // try to parse the value as JSON
       try {
-	json_parser::read_json( raw_value, node );
+	boost::property_tree::json_parser::read_json( raw_value, node );
       } catch ( boost::property_tree::json_parser::json_parser_error &e ) {
 	node.put_value( raw_value );
       }

@@ -1,5 +1,5 @@
 
-#include <trace-analysis/trace_utils.hpp>
+#include <trace-analysis/trace_util.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <sstream>
 

@@ -15,10 +15,10 @@ endif (USE_PEDANTIC)
 
 
 add_library( p2l-trace-analysis SHARED
-  src/trace_utils.cpp
+  src/trace_util.cpp
 )
 pods_install_headers( 
-  src/trace_utils.hpp
+  src/trace_util.hpp
   DESTINATION
   trace-analysis
 )
