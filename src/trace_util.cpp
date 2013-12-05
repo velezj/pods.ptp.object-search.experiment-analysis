@@ -2,15 +2,103 @@
 #include "trace_util.hpp"
 #include <boost/exception/all.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/xml_parser.hpp>
+#include <boost/filesystem.hpp>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <cmath>
 
+
+using namespace boost::filesystem;
 
 
 namespace trace_analysis {
 
+  //=========================================================================
+
+  std::vector<std::string> find_all_experiment_ids( const std::string& dir )
+  {
+    path root(dir);
+    std::vector<std::string> ids;
+    for( auto it = directory_iterator(root);
+	 it != directory_iterator();
+	 ++it ) {
+
+      if( it->path().extension() == ".trace" ) {
+	ids.push_back( it->path().stem().string() );
+      }
+    }
+    
+    return ids;
+  }
+
+  //=========================================================================
+
+  experiment_result_t load_results( const std::string& dir,
+				    const std::string& id )
+  {
+    experiment_result_t res;
+    
+    path root(dir);
+    path trace_path( root / (id + ".trace" ) );
+    std::ifstream is( trace_path.c_str() );
+    std::string line;
+    size_t obs_num;
+    while( std::getline( is, line ) ) {
+      std::istringstream iss( line );
+      iss >> obs_num;
+      std::string temp_string;
+      iss >> temp_string >> temp_string;
+      size_t found;
+      iss >> found;
+      res.found_trace.push_back( found );
+    }
+    
+    res.total_observations = obs_num;
+    res.total_points = res.found_trace.back();
+    return res;
+  }
+  
+
+  //=========================================================================
+
+  aggregate_results_t aggregate_results
+  ( const std::vector<std::string>& ids,
+    const std::vector<experiment_result_t>& results )
+  {
+    aggregate_results_t res;
+    res.results = results;
+    res.experiment_ids = ids;
+    double sum = 0;
+    for( auto r : results ) {
+      sum += r.total_observations;
+    }
+    res.mean_total_observations = sum / results.size();
+    double var = 0;
+    for( auto r : results ) {
+      var += 
+	( r.total_observations - res.mean_total_observations ) *
+	( r.total_observations - res.mean_total_observations );
+    }
+    var /= ids.size();
+    res.variance_total_observations = var;
+    res.stderr_total_observations = sqrt( var ) / ( results.size() - 1 );
+    return res;
+  }
+
+
+  //=========================================================================
+  //=========================================================================
+  //=========================================================================
+  //=========================================================================
+  //=========================================================================
+  //=========================================================================
+  //=========================================================================
+  //=========================================================================
+  //=========================================================================
+  //=========================================================================
+  //=========================================================================
+  
 
   //=========================================================================
 
@@ -30,36 +118,15 @@ namespace trace_analysis {
       std::string raw_value;
       iss >> tag;
       std::getline( iss, raw_value );
-      std::istringstream value_stream( raw_value );
-
-      //std::cout << "RAW: tag=" << tag << " valuw=" << raw_value << std::endl;
       
       // create the resulting pair
       boost::property_tree::ptree node;
 
       // try to parse the value as JSON
       try {
-	boost::property_tree::json_parser::read_json( value_stream, node );
-	// std::cout << "..trace [" << tag << "] ";
-	// boost::property_tree::xml_parser::write_xml( std::cout, node );
-	// std::cout << std::endl;
+	boost::property_tree::json_parser::read_json( raw_value, node );
       } catch ( boost::property_tree::json_parser::json_parser_error &e ) {
-
-	// ok, try to foirce a JSON object 
-	std::stringstream ss;
-	ss << "{ \"" << tag << "\" : " << raw_value << " }";
-	try {
-	  boost::property_tree::json_parser::read_json( ss, node );
-	  // std::cout << "..trace [" << tag << "] {coerced} ";
-	  // boost::property_tree::xml_parser::write_xml( std::cout, node );
-	  // std::cout << std::endl;
-	} catch ( boost::property_tree::json_parser::json_parser_error &e2 ) {
-	  std::cout << boost::diagnostic_information( e ) << std::endl;
-	  node = boost::property_tree::ptree( raw_value );
-	  // std::cout << "..trace [" << tag << "] {malformed} ";
-	  // boost::property_tree::xml_parser::write_xml( std::cout, node );
-	  // std::cout << std::endl;
-	}
+	node.put_value( raw_value );
       }
 
       // ok , add to the items list
@@ -78,8 +145,6 @@ namespace trace_analysis {
       BOOST_THROW_EXCEPTION( std::invalid_argument("Cannot call find_item_groups with empty query") );
     }
 
-    bool verbose = false;
-
     // resutls, to be populated
     std::vector< boost::property_tree::ptree > groups;
     
@@ -95,14 +160,6 @@ namespace trace_analysis {
     
       // get the tag of the current line being searched
       std::string tag = _items[i].first;
-
-      if( verbose ) {
-	std::cout << "[" << i << " | " << key_index << "] tag: " << tag << "  match: <";
-	for( size_t j = 0; j < group_indices.size(); ++j ) {
-	  std::cout << group_indices[j] << ",";
-	}
-	std::cout << ">" << std::endl;
-      }
       
       // if the tag is the key we want, either incremenet the key index
       // or not depending on whether it is the last index
@@ -117,20 +174,12 @@ namespace trace_analysis {
 	  // add the found sequence to the list of resutls
 	  boost::property_tree::ptree g;
 	  for( size_t j = 0; j < group_indices.size(); ++j ) {
-	    g.put_child( _items[group_indices[j]].first,
-			 _items[group_indices[j]].second );
+	    g.put_child( _items[j].first,
+			 _items[j].second );
 	  }
 	  g.put_child( _items[i].first,
 		       _items[i].second );
 	  groups.push_back( g );
-	  
-	  if( verbose ) {
-	    std::cout << "--> match <";
-	    for( size_t j = 0; j < group_indices.size(); ++j ) {
-	      std::cout << group_indices[j] << ",";
-	    }
-	    std::cout << i << ">" << std::endl;
-	  }
 	}
 
 	// at this point, we have matched something so continue with next line
@@ -143,28 +192,15 @@ namespace trace_analysis {
       for( size_t j = 0; j < key_index; ++j ) {
 	if( tag == group_constraints[j] ) {
 
-	  
-	  // now, we want to jump back to the next line after
-	  // the previous matched
-	  // and start looking for a new match
-	  // NOTE: we *do not* add one , since hte for loop
-	  //       will incremenet i after this!
-	  i = group_indices[ j ];
-
-	  // ok, clear the group indices found up to the
-	  // matched previous key
-	  for( size_t k = j; k < key_index; ++k ) {
+	  // clean up the current matched sequence of indices
+	  // by removing the mathced keys *after* the one we just found
+	  for( size_t k = j + 1; k < key_index; ++j ) {
 	    group_indices.pop_back();
 	  }
-
-	  // we want to find the previous key again
-	  key_index = j;
-
-	  if( verbose ) {
-	    std::cout << "!reset downto i=" << i << std::endl;
-	  }
-
-	  break;
+	  
+	  // found previous key, reset to now looking for the key
+	  // after it!
+	  key_index = j + 1;
 	}
       }
     }

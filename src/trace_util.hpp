@@ -11,6 +11,47 @@ namespace trace_analysis {
 
   //=========================================================================
 
+  // Description:
+  // Enumerates all of the experiment files in a given directory
+  std::vector<std::string> find_all_experiment_ids(const std::string& dir );
+  
+  //=========================================================================
+
+  // Description:
+  // A structure with the "results" of an experiment
+  struct experiment_result_t
+  {
+    size_t total_observations;
+    size_t total_points;
+    std::vector<size_t> found_trace;
+  };
+
+  // Description:
+  // Aggregated results for a set of experiments
+  struct aggregate_results_t
+  {
+    std::vector<experiment_result_t> results;
+    std::vector<std::string> experiment_ids;
+    double mean_total_observations;
+    double stderr_total_observations;
+    double variance_total_observations;
+  };
+
+  //=========================================================================
+  
+  // Description:
+  // Loads and parses the results for an experiment
+  experiment_result_t load_results( const std::string& dir,
+				    const std::string& id );
+
+  //=========================================================================
+  
+  // Description:
+  // Aggregate a set of results
+  aggregate_results_t aggregate_results
+  ( const std::vector<std::string>& ids,
+    const std::vector<experiment_result_t>& results );
+
   //=========================================================================
 
   // Description:
@@ -28,15 +69,6 @@ namespace trace_analysis {
     // Description:
     // Loads a data fro ma trace stream.
     void load( std::istream& is );
-
-    // Description:
-    // Returns a vector of all of the items.
-    // This is not usually what you want, you probably want 
-    // a certain set of items as groups, see find_item_groups
-    std::vector< std::pair< std::string,
-			    boost::property_tree::ptree > >
-    items() const
-    { return _items; }
 
     // Description:
     // Returns a list of matching sections of the trace.
@@ -73,7 +105,7 @@ namespace trace_analysis {
     //     => [ { "+A+" : 1,
     //            "+B+" : 2.2 -OR- 4.2
     //            "+C+" : { "foo" : 1 } },
-    //          { "+A+" : 2,
+    //          { "+A+" : 1,
     //            "+B+" : 3.2
     //            "+C+" : { "foo" : 3.2 } },
     //          
