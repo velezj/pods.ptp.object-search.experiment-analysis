@@ -22,12 +22,12 @@ pods_install_headers(
   DESTINATION
   trace-analysis
 )
-pods_use_pkg_config_packages( p2l-trace-analysis boost-1.54.0 boost-1.54.0-filesystem)
+pods_use_pkg_config_packages( p2l-trace-analysis boost-1.54.0 boost-1.54.0-filesystem boost-1.54.0-system)
 pods_install_libraries( p2l-trace-analysis )
 pods_install_pkg_config_file(p2l-trace-analysis
     CFLAGS
     LIBS -lp2l-trace-analysis
-    REQUIRES boost-1.54.0 boost-1.54.0-filesystem
+    REQUIRES boost-1.54.0 boost-1.54.0-filesystem boost-1.54.0-system
     VERSION 0.0.1)
 
 
