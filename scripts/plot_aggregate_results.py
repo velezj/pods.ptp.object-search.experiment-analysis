@@ -59,7 +59,7 @@ def create_plot_data_for_single_aggregate( agg_json, trace_max_length ):
 def create_aggregate_results_plot( output_filename, agg_filenames ):
     plot_data = []
     for fn in agg_filenames:
-        plot_data.append( create_plot_data_for_single_aggregate( load_aggregate_to_json( fn ), 100 ) )
+        plot_data.append( create_plot_data_for_single_aggregate( load_aggregate_to_json( fn ), 120 ) )
 
     colorwheel = ['r','c','g','y']
     counter = 0
@@ -79,7 +79,7 @@ def create_aggregate_results_plot( output_filename, agg_filenames ):
         plt.axvline( x=pdata['time_mean'] - pdata['time_stderr'], color='m', linestyle="--" )
         plt.axvline( x=pdata['time_mean'] + pdata['time_stderr'], color='m', linestyle="--" )
         counter = counter + 1
-    #plt.legend( bbox_to_anchor=(0., 1.02, 1., .102), loc=3, mode="expand", borderaxespad=0.)
+    plt.legend( legends, ['coverage','$\mathcal{X}^{L}$','$\mathcal{X}$'], loc=2)
     plt.xlabel( "Number of Observations" )
     plt.ylabel( "Points Found" )
     plt.tight_layout()
