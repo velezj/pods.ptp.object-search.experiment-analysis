@@ -69,8 +69,8 @@ def create_aggregate_results_plot( output_filename, agg_filenames ):
     plt.hold(True)
     for pdata in plot_data:
         color = colorwheel[ counter % len(colorwheel) ]
-        for p in pdata['plots']:
-            plt.plot( p, linestyle=':', linewidth=0.3, color=color )
+        # for p in pdata['plots']:
+        #     plt.plot( p, linestyle=':', linewidth=0.3, color=color )
         leg, = plt.plot( pdata['mean'], linestyle='-', color=color, linewidth=2.0, label=pdata['label'] )
         legends.append( leg )
         plt.plot( numpy.array( pdata['mean'] ) + numpy.array( pdata['stderr'] ), 'm--' )
@@ -82,8 +82,9 @@ def create_aggregate_results_plot( output_filename, agg_filenames ):
     #plt.legend( bbox_to_anchor=(0., 1.02, 1., .102), loc=3, mode="expand", borderaxespad=0.)
     plt.xlabel( "Number of Observations" )
     plt.ylabel( "Points Found" )
+    plt.tight_layout()
     plt.show()
-    plt.savefig( output_filename )
+    plt.savefig( output_filename, bbox_inches='tight' )
 
 #=======================================================================
 #=======================================================================
