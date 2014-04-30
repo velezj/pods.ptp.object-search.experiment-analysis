@@ -51,6 +51,21 @@ int main( int argc, char** argv )
     }
     potantial_ids = temp_ids;
     std::cout << "Filtered down to " << potantial_ids.size() << " experiments" << std::endl;
+
+    temp_ids.clear();
+    std::cout << "Min Observations Allowed> ";
+    size_t min_obs;
+    std::cin >> min_obs;
+
+    for( auto id : potantial_ids ) {
+      experiment_result_t res = load_results( dir, id );
+      if( res.total_observations >=  min_obs ) {
+	temp_ids.push_back( id );
+      }
+    }
+    potantial_ids = temp_ids;
+    std::cout << "Filtered down to " << potantial_ids.size() << " experiments" << std::endl;
+
  
     std::string accept;
     std::cout << "Accept experiments[y/n]> ";
