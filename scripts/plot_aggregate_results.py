@@ -56,10 +56,10 @@ def create_plot_data_for_single_aggregate( agg_json, trace_max_length ):
 
 #=======================================================================
 
-def create_aggregate_results_plot( output_filename, agg_filenames, labels = None ):
+def create_aggregate_results_plot( output_filename, max_obs, agg_filenames, labels = None ):
     plot_data = []
     for fn in agg_filenames:
-        plot_data.append( create_plot_data_for_single_aggregate( load_aggregate_to_json( fn ), 165 ) )
+        plot_data.append( create_plot_data_for_single_aggregate( load_aggregate_to_json( fn ), max_obs ) )
 
     colorwheel = ['r','c','g','y']
     counter = 0
@@ -119,5 +119,6 @@ if __name__ == "__main__":
     plt.ion()
     import sys
     create_aggregate_results_plot( sys.argv[1],
-                                   sys.argv[3::2],
-                                   sys.argv[2::2])
+                                   int(sys.argv[2]),
+                                   sys.argv[4::2],
+                                   sys.argv[3::2])
