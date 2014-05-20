@@ -1,0 +1,8 @@
+pod-build/
+*~
+lcmtypes/c/
+lcmtypes/cpp/
+lcmtypes/python/
+lcmtypes/java/
+*.eps
+*.agg
