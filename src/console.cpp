@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <fstream>
 #include <trace-analysis/trace_util.hpp>
@@ -66,6 +67,35 @@ int main( int argc, char** argv )
     potantial_ids = temp_ids;
     std::cout << "Filtered down to " << potantial_ids.size() << " experiments" << std::endl;
 
+
+    temp_ids.clear();
+    std::cout << "Min Found Points Allowed> ";
+    size_t min_points;
+    std::cin >> min_points;
+
+    for( auto id : potantial_ids ) {
+      experiment_result_t res = load_results( dir, id );
+      if( res.total_points >=  min_points ) {
+	temp_ids.push_back( id );
+      }
+    }
+    potantial_ids = temp_ids;
+    std::cout << "Filtered down to " << potantial_ids.size() << " experiments" << std::endl;
+
+
+    // print out the experiment results (in one-line format)
+    size_t max_len_id = 0;
+    for( auto id : potantial_ids ) {
+      if( id.size() > max_len_id ) {
+	max_len_id = id.size();
+      }
+    }
+    for( auto id : potantial_ids ) {
+      experiment_result_t res = load_results( dir, id );
+      std::cout << "  " << std::setw(max_len_id) << id << ": "
+		<< std::setw(5) << res.total_observations << "  " 
+		<< res.total_points << std::endl;
+    }
  
     std::string accept;
     std::cout << "Accept experiments[y/n]> ";
