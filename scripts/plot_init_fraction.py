@@ -70,6 +70,7 @@ if __name__ == "__main__":
     couch = couchdb.Server()
     db = couch['rawseeds-experiment-results']
     view_name = "plot_init_fraction/plot_data"
+    view_name = "plot_init_fraction/plot_data_fixedseed"
 
     # ampping from identifier to plot objects (figures)
     plot_axes_map = {}
@@ -123,9 +124,12 @@ if __name__ == "__main__":
         s = float(stats['sum'])
         ss = float(stats['sumsqr'])
         x = [ float(init_fraction) * float(init_fraction) ]
+        x = [ float(init_fraction) ]
         y = [ s / n ]
         yerr = [ math.sqrt( ss/n - (s/n * s/n) ) / math.sqrt(n) ]
         axes.errorbar( x, y, yerr=yerr, label=l, color=c )
+
+        print "DATA [" + str(plot_id) + "]: " + label_for_key(key) + " = " + "( " + str(x) + ", " + str(y) + " +/- " + str(yerr) + ")"
 
     # ok, now tight leyout all figures and save
     for k,fig in plot_fig_map.iteritems():
@@ -135,6 +139,6 @@ if __name__ == "__main__":
         ax.set_ylabel( "# Observations" )
         ax.legend(bbox_to_anchor=(0.5, 1.05), loc=8, borderaxespad=0.)
         fig.tight_layout()
-        filename = "initfraction-plots/initfraction-goal" + str(k[0]) + "-" + str(k[1]) + "-001.eps"
+        filename = "initfraction-plots/initfraction-goal" + str(k[0]) + "-" + str(k[1]) + "-231.eps"
         fig.savefig( filename, bbox_inches='tight' )
 
