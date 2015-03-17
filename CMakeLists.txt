@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6.0)
 
 # pull in the pods macros. See cmake/pods.cmake for documentation
-set(POD_NAME p2l-trace-analysis)
+set(POD_NAME object-search.trace-analysis)
 include(cmake/pods.cmake)
 
 
@@ -14,7 +14,7 @@ if( USE_PEDANTIC )
 endif (USE_PEDANTIC)
 
 
-add_library( p2l-trace-analysis SHARED
+add_library( object-search.trace-analysis SHARED
   src/trace_util.cpp
 )
 pods_install_headers( 
@@ -22,21 +22,21 @@ pods_install_headers(
   DESTINATION
   trace-analysis
 )
-pods_use_pkg_config_packages( p2l-trace-analysis boost-1.54.0 boost-1.54.0-filesystem boost-1.54.0-system)
-pods_install_libraries( p2l-trace-analysis )
-pods_install_pkg_config_file(p2l-trace-analysis
+pods_use_pkg_config_packages( object-search.trace-analysis boost-1.54.0 boost-1.54.0-filesystem boost-1.54.0-system)
+pods_install_libraries( object-search.trace-analysis )
+pods_install_pkg_config_file(object-search.trace-analysis
     CFLAGS
-    LIBS -lp2l-trace-analysis
+    LIBS -lobject-search.trace-analysis
     REQUIRES boost-1.54.0 boost-1.54.0-filesystem boost-1.54.0-system
     VERSION 0.0.1)
 
 
 
 # the console
-add_executable( p2l-trace-analysis-console
+add_executable( object-search.trace-analysis-console
   src/console.cpp)
-pods_use_pkg_config_packages( p2l-trace-analysis-console p2l-trace-analysis boost-1.54.0-regex)
-pods_install_executables( p2l-trace-analysis-console )
+pods_use_pkg_config_packages( object-search.trace-analysis-console object-search.trace-analysis boost-1.54.0-regex)
+pods_install_executables( object-search.trace-analysis-console )
 
 
 
